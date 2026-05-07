@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>武林角色测试 - TechEdict</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='12' fill='%23c23a2a'/><text x='50' y='68' font-family='serif' font-size='52' fill='%23f5f0e8' text-anchor='middle' font-weight='bold'>武</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700;900&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-paper: #f5f0e8;
+  --bg-dark: #2c1810;
+  --text-primary: #3c2415;
+  --text-secondary: #6b4c3b;
+  --accent-red: #c23a2a;
+  --accent-gold: #b8860b;
+  --accent-black: #1a1a2e;
+  --border-ink: #3c2415;
+  --ink-light: rgba(60,36,21,0.15);
+  --ink-medium: rgba(60,36,21,0.3);
+  --ink-heavy: rgba(60,36,21,0.6);
+  --font-title: 'Ma Shan Zheng', cursive;
+  --font-body: 'Noto Serif SC', serif;
+  --font-accent: 'ZCOOL XiaoWei', serif;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-paper);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* 宣纸纹理背景 */
+body::before {
+  content: '';
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background:
+    radial-gradient(ellipse at 20% 50%, rgba(194,58,42,0.03) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(184,134,11,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 80%, rgba(60,36,21,0.02) 0%, transparent 50%),
+    url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='256' height='256' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+}
+
+.app {
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  min-height: 100vh;
+}
+
+/* 开场页 */
+.start-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  text-align: center;
+  animation: fadeIn 1s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes brushStroke {
+  from { stroke-dashoffset: 300; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes sealStamp {
+  0% { transform: scale(3) rotate(-20deg); opacity: 0; }
+  60% { transform: scale(1.05) rotate(-2deg); opacity: 0.9; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+@keyframes typing {
+  from { width: 0; }
+  to { width: 100%; }
+}
+
+@keyframes blink {
+  50% { border-color: transparent; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes slideInRight {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes scaleIn {
+  from { opacity: 0; transform: scale(0.8); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.title-wrapper {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.main-title {
+  font-family: var(--font-title);
+  font-size: clamp(48px, 10vw, 88px);
+  color: var(--accent-red);
+  line-height: 1.2;
+  text-shadow: 2px 2px 0 rgba(60,36,21,0.1);
+  letter-spacing: 8px;
+}
+
+.sub-title {
+  font-family: var(--font-accent);
+  font-size: clamp(16px, 3vw, 22px);
+  color: var(--text-secondary);
+  margin-top: 12px;
+  letter-spacing: 4px;
+}
+
+.divider-brush {
+  width: 120px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--accent-red), transparent);
+  margin: 24px auto;
+  border-radius: 2px;
+}
+
+.start-desc {
+  font-family: var(--font-body);
+  font-size: clamp(14px, 2.5vw, 16px);
+  color: var(--text-secondary);
+  max-width: 500px;
+  line-height: 2;
+  margin-bottom: 16px;
+}
+
+.clans-preview {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin: 24px 0 36px;
+  max-width: 600px;
+}
+
+.clan-tag {
+  font-family: var(--font-accent);
+  font-size: 13px;
+  color: var(--text-secondary);
+  background: var(--ink-light);
+  padding: 4px 12px;
+  border-radius: 4px;
+  border: 1px solid var(--ink-light);
+  transition: all 0.3s;
+}
+
+.clan-tag:hover {
+  background: var(--ink-medium);
+  color: var(--text-primary);
+  transform: translateY(-2px);
+}
+
+.btn-start {
+  font-family: var(--font-accent);
+  font-size: 20px;
+  color: var(--bg-paper);
+  background: var(--accent-red);
+  border: none;
+  padding: 14px 56px;
+  border-radius: 8px;
+  cursor: pointer;
+  letter-spacing: 6px;
+  transition: all 0.3s;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-start:hover {
+  background: #a52e20;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(194,58,42,0.3);
+}
+
+.btn-start:active {
+  transform: translateY(0);
+}
+
+/* 答题页 */
+.quiz-screen {
+  animation: fadeIn 0.5s ease;
+  padding-top: 20px;
+}
+
+.progress-scroll {
+  position: relative;
+  width: 100%;
+  height: 8px;
+  background: var(--ink-light);
+  border-radius: 4px;
+  margin-bottom: 40px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent-red), var(--accent-gold));
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.progress-text {
+  font-family: var(--font-accent);
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.scene-box {
+  background: rgba(60,36,21,0.04);
+  border-left: 3px solid var(--accent-gold);
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  border-radius: 0 8px 8px 0;
+}
+
+.scene-label {
+  font-family: var(--font-accent);
+  font-size: 12px;
+  color: var(--accent-gold);
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+}
+
+.scene-text {
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--text-secondary);
+  line-height: 1.8;
+}
+
+.question-text {
+  font-family: var(--font-title);
+  font-size: clamp(22px, 5vw, 30px);
+  color: var(--text-primary);
+  margin-bottom: 28px;
+  line-height: 1.4;
+}
+
+.options-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.option-btn {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  background: rgba(245,240,232,0.8);
+  border: 1px solid var(--ink-light);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-align: left;
+  font-family: var(--font-body);
+  font-size: 15px;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+.option-btn:hover {
+  border-color: var(--accent-red);
+  background: rgba(194,58,42,0.05);
+  transform: translateX(8px);
+  box-shadow: 0 2px 12px rgba(60,36,21,0.08);
+}
+
+.option-btn:active {
+  transform: translateX(4px);
+}
+
+.option-label {
+  font-family: var(--font-title);
+  font-size: 22px;
+  color: var(--accent-red);
+  min-width: 32px;
+  text-align: center;
+}
+
+/* 结果页 */
+.result-screen {
+  animation: fadeIn 0.8s ease;
+  padding-top: 10px;
+}
+
+.result-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.seal-badge {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 140px;
+  height: 140px;
+  border: 4px solid;
+  border-radius: 12px;
+  margin: 0 auto 16px;
+  animation: sealStamp 0.6s ease forwards;
+  position: relative;
+  background: rgba(245,240,232,0.9);
+}
+
+.seal-badge::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border: 1px solid;
+  border-radius: 8px;
+  opacity: 0.5;
+}
+
+.seal-role-name {
+  font-family: var(--font-title);
+  font-size: 28px;
+  letter-spacing: 4px;
+}
+
+.seal-clan {
+  font-family: var(--font-accent);
+  font-size: 12px;
+  margin-top: 4px;
+  letter-spacing: 2px;
+  opacity: 0.8;
+}
+
+.result-alias {
+  font-family: var(--font-title);
+  font-size: clamp(36px, 8vw, 56px);
+  margin: 16px 0 4px;
+  line-height: 1.2;
+}
+
+.result-modern {
+  font-family: var(--font-accent);
+  font-size: 16px;
+  color: var(--text-secondary);
+  letter-spacing: 3px;
+}
+
+.quote-box {
+  background: rgba(60,36,21,0.04);
+  border-left: 3px solid;
+  padding: 20px 24px;
+  margin: 28px 0;
+  border-radius: 0 8px 8px 0;
+  min-height: 60px;
+}
+
+.quote-text {
+  font-family: var(--font-accent);
+  font-size: 18px;
+  line-height: 1.8;
+  font-style: italic;
+}
+
+.quote-cursor {
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 2px;
+  animation: blink 0.8s infinite;
+  vertical-align: text-bottom;
+}
+
+.section-title {
+  font-family: var(--font-title);
+  font-size: 22px;
+  margin: 28px 0 16px;
+  color: var(--text-primary);
+  position: relative;
+  display: inline-block;
+}
+
+.section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  width: 40px;
+  height: 2px;
+  background: var(--accent-red);
+}
+
+.result-desc {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 2;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+.tags-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0 24px;
+}
+
+.tag {
+  font-family: var(--font-accent);
+  font-size: 13px;
+  padding: 4px 14px;
+  border-radius: 20px;
+  color: white;
+}
+
+.martial-box {
+  background: rgba(60,36,21,0.04);
+  padding: 20px;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+.martial-name {
+  font-family: var(--font-title);
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+
+.martial-desc {
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.8;
+  color: var(--text-secondary);
+}
+
+.personality-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.personality-item {
+  font-family: var(--font-accent);
+  font-size: 13px;
+  padding: 6px 16px;
+  background: var(--ink-light);
+  border-radius: 4px;
+  border: 1px solid var(--ink-light);
+}
+
+.radar-container {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.radar-container svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.rank-list {
+  margin: 20px 0;
+}
+
+.rank-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--ink-light);
+  animation: slideInRight 0.5s ease forwards;
+  opacity: 0;
+}
+
+.rank-item:nth-child(1) { animation-delay: 0.1s; }
+.rank-item:nth-child(2) { animation-delay: 0.2s; }
+.rank-item:nth-child(3) { animation-delay: 0.3s; }
+.rank-item:nth-child(4) { animation-delay: 0.4s; }
+.rank-item:nth-child(5) { animation-delay: 0.5s; }
+
+.rank-num {
+  font-family: var(--font-title);
+  font-size: 20px;
+  width: 28px;
+  text-align: center;
+}
+
+.rank-name {
+  font-family: var(--font-accent);
+  font-size: 14px;
+  flex: 1;
+}
+
+.rank-bar-bg {
+  width: 120px;
+  height: 6px;
+  background: var(--ink-light);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.rank-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 1s ease;
+}
+
+.rank-score {
+  font-family: var(--font-accent);
+  font-size: 13px;
+  width: 40px;
+  text-align: right;
+}
+
+.btn-restart {
+  display: block;
+  margin: 32px auto;
+  font-family: var(--font-accent);
+  font-size: 16px;
+  color: var(--text-secondary);
+  background: none;
+  border: 1px solid var(--ink-medium);
+  padding: 10px 40px;
+  border-radius: 8px;
+  cursor: pointer;
+  letter-spacing: 3px;
+  transition: all 0.3s;
+}
+
+.btn-restart:hover {
+  border-color: var(--accent-red);
+  color: var(--accent-red);
+}
+
+/* 响应式 */
+@media (max-width: 640px) {
+  .app { padding: 12px; }
+  .seal-badge { width: 110px; height: 110px; }
+  .seal-role-name { font-size: 22px; }
+  .rank-bar-bg { width: 80px; }
+  .option-btn { padding: 12px 14px; font-size: 14px; }
+}
+</style>
+</head>
+<body>
+<div class="app" id="app"></div>
+<script>
+
+const ROLES = [{"id": "cto", "name": "CTO", "alias": "御剑阁主", "clan": "御剑阁", "martialArt": "乾坤御剑诀", "martialDesc": "运筹帷幄，一剑定乾坤。善观天下大势，以最小力量撬动最大局面。不出手则已，一出手必是决胜千里。", "personality": ["战略眼光", "冷静理性", "大局观强", "风险意识"], "tags": ["格局", "远见", "决策"], "traitLines": ["有人提议一个技术上很炫但与业务无关的功能。", "产品要交付，但架构有技术债，你会怎么做？", "团队用了一种新技术但效果不好，你的态度是？"], "quote": "天下武功，唯快不破。但比快更重要的，是方向。", "color": "#c23a2a", "modernRole": "首席技术官", "description": "御剑阁主，统御全局的武学宗师。不拘泥于招式，擅长以最少的资源达成最大的战略目标。深谙技术趋势与商业逻辑的交汇之道。"}, {"id": "pm", "name": "PM", "alias": "传功长老", "clan": "传功堂", "martialArt": "七巧玲珑心经", "martialDesc": "能言善辩，善于将复杂的武学理论转化为通俗易懂的口诀。见人说人话，见鬼说鬼话，是门派与江湖之间的桥梁。", "personality": ["沟通达人", "同理心强", "善于协调", "目标导向"], "tags": ["桥梁", "翻译", "推进"], "traitLines": ["用户和开发对需求理解不一致，你如何处理？", "技术方案讨论时各方争执不下，你怎么协调？", "上线前发现一个体验问题，但修复要延期，你怎么办？"], "quote": "需求不清晰，不是用户的错，是我们的功课还没做够。", "color": "#d4920b", "modernRole": "产品经理", "description": "传功堂长老，精通各门各派武学的翻译官。能将复杂的用户需求翻译为技术方案，也能将技术限制解释给非技术人员听。门派中不可或缺的润滑剂。"}, {"id": "architect", "name": "Architect", "alias": "天机阁主", "clan": "天机阁", "martialArt": "天罡北斗阵", "martialDesc": "布阵高手，擅长将复杂的系统拆解为清晰的模块。每一处接口、每一个数据流都经过精心设计，如星辰运转般精确。", "personality": ["逻辑严密", "系统性思维", "抽象能力强", "追求优雅"], "tags": ["架构", "设计", "规范"], "traitLines": ["设计一个新系统时，你第一步会做什么？", "面对遗留系统的技术债，你的处理策略是？", "如何平衡系统的扩展性与简洁性？"], "quote": "好的架构如同好的阵法，增减一子，全局皆动。", "color": "#1a5276", "modernRole": "架构师", "description": "天机阁主，布阵设计的大师。精通各种架构模式与设计原则，追求系统的优雅与可扩展性。在他看来，代码是艺术，架构是哲学。"}, {"id": "qa", "name": "QA", "alias": "执法堂主", "clan": "执法堂", "martialArt": "明镜止水诀", "martialDesc": "心如明镜，洞察一切漏洞与瑕疵。以严苛的标准审视每一行代码、每一个功能，任何瑕疵都逃不过他的法眼。", "personality": ["细致入微", "追求完美", "逻辑敏锐", "敢于说不"], "tags": ["质量", "封驳", "守护"], "traitLines": ["你发现一个偶现的 bug，开发说很难复现，你怎么处理？", "上线前测试发现一个非关键问题，但已来不及修复，你的建议？", "对于\"够了就行\"的态度，你的看法是？"], "quote": "不是我太严，是用户不会给你第二次机会。", "color": "#7b241c", "modernRole": "质量守门人", "description": "执法堂主，质量的守护者。拥有封驳权，可以否决任何不达标的交付物。在他眼里，99%的质量等于0%，因为那1%的缺陷可能就是用户的噩梦。"}, {"id": "devops", "name": "DevOps", "alias": "机括阁主", "clan": "机括阁", "martialArt": "千机百变术", "martialDesc": "精通各种机关术，能将手动操作全部自动化。擅长运维、部署、监控，是门派运转的基础设施保障。", "personality": ["自动化思维", "效率至上", "系统稳定", "工具达人"], "tags": ["自动化", "基础设施", "效率"], "traitLines": ["部署流程很繁琐，你的第一反应是？", "生产环境出了故障，你的处理步骤是？", "如何让团队的发布流程更顺畅？"], "quote": "能自动化的绝不手动，能并行的绝不串行。", "color": "#117864", "modernRole": "DevOps", "description": "机括阁主，自动化运维的大师。精通 CI/CD、容器化、监控告警，是整个门派技术体系的基石。他相信，好的基础设施可以让团队专注于真正重要的事情。"}, {"id": "teamlead", "name": "Team Lead", "alias": "兵部尚书", "clan": "兵部", "martialArt": "点将录", "martialDesc": "知人善任，擅长根据每个人的特长分配任务。既是技术骨干，又是团队的管理者，深谙\"用人如用器\"之道。", "personality": ["知人善任", "以身作则", "善于激励", "责任心强"], "tags": ["管理", "调度", "培养"], "traitLines": ["团队成员能力参差不齐，你如何分配任务？", "有人跟不上进度，你如何处理？", "如何衡量团队成员的贡献？"], "quote": "一个人走得快，一群人走得远。我的任务是让每个人都走得远。", "color": "#1e8449", "modernRole": "团队Leader", "description": "兵部尚书，团队管理的行家。善于发现每个成员的闪光点，将合适的人放在合适的位置。既懂技术又懂管理，是连接战略与执行的关键纽带。"}, {"id": "techplanner", "name": "Tech Planner", "alias": "户部尚书", "clan": "户部", "martialArt": "精打细算功", "martialDesc": "擅长成本分析、资源规划、ROI 评估。每一分投入都要有回报，每一次技术选型都要算清账。", "personality": ["精打细算", "数据驱动", "务实高效", "关注ROI"], "tags": ["成本", "规划", "评估"], "traitLines": ["老板问一个新项目要投入多少，你怎么回答？", "技术选型时，你如何权衡成本与收益？", "如何评估一个技术投资是否值得？"], "quote": "技术是手段，不是目的。每一分投入，都要算清楚回报。", "color": "#b9770e", "modernRole": "技术规划师", "description": "户部尚书，技术投资的精算师。擅长工作量估算、成本评估、ROI 分析，确保每一分技术投入都有明确的回报。在他看来，不做成本估算的技术决策都是赌博。"}, {"id": "standard", "name": "Standard", "alias": "礼部尚书", "clan": "礼部", "martialArt": "规矩方圆功", "martialDesc": "制定门派规矩的权威。从代码规范到流程标准，一切都要有章可循。他的规矩不是束缚，而是保障质量的基石。", "personality": ["规则意识强", "注重规范", "追求统一", "耐心细致"], "tags": ["规范", "标准", "流程"], "traitLines": ["团队代码风格混乱，你怎么推动统一？", "有人不遵守代码规范，你怎么处理？", "如何平衡规范与效率？"], "quote": "没有规矩不成方圆，但规矩要让人愿意遵守。", "color": "#6c3483", "modernRole": "技术规范师", "description": "礼部尚书，技术标准的制定者。负责编码规范、技术标准、流程规范的制定与推行。在他看来，好的规范不是枷锁，而是团队的共同语言。"}, {"id": "frontend", "name": "Frontend", "alias": "七秀弟子", "clan": "七秀坊", "martialArt": "凌波微步·UI篇", "martialDesc": "擅长打造精美的界面与流畅的交互，如七秀坊的剑舞般赏心悦目。每一个像素都经过精心雕琢。", "personality": ["审美在线", "用户感知强", "追求体验", "细节控"], "tags": ["界面", "交互", "体验"], "traitLines": ["设计师给了一个很酷但实现复杂的效果，你怎么办？", "产品说\"这个动画一定要有\"，但性能可能受影响，你怎么处理？", "如何平衡视觉效果与开发效率？"], "quote": "用户不会记住你的代码，但会记住你的界面。", "color": "#c0392b", "modernRole": "前端开发", "description": "七秀坊弟子，界面交互的艺术家。精通 CSS 动画、响应式布局、组件化开发，追求极致的用户体验。在他看来，好的前端就是让用户感觉不到前端的存在。"}, {"id": "backend", "name": "Backend", "alias": "武当弟子", "clan": "武当派", "martialArt": "太极数据库心法", "martialDesc": "内功深厚，擅长数据处理与业务逻辑。如武当太极，以柔克刚，将复杂的业务需求化解为优雅的数据模型。", "personality": ["逻辑严密", "数据敏感", "稳定可靠", "深度思考"], "tags": ["逻辑", "数据", "建模"], "traitLines": ["业务逻辑越来越复杂，你怎么组织代码？", "数据表设计时，你最看重什么？", "如何处理高并发场景？"], "quote": "界面会变，业务会变，但数据模型一旦定下来，就是根基。", "color": "#2e86c1", "modernRole": "后端开发", "description": "武当派弟子，业务逻辑的内功大师。精通数据建模、API 设计、性能优化，追求代码的健壮与可维护。在他看来，好的后端就像好的内功，平时看不见，关键时刻救命。"}, {"id": "tester", "name": "Tester", "alias": "少林弟子", "clan": "少林寺", "martialArt": "金刚伏魔阵", "martialDesc": "以各种刁钻的测试用例挑战系统的极限，如同少林金刚伏魔阵，专治各种不服。", "personality": ["怀疑精神", "穷尽思维", "耐心十足", "善于发现"], "tags": ["测试", "质量", "攻防"], "traitLines": ["你如何设计测试用例来覆盖边界情况？", "有人说\"这个功能不可能出错\"，你的反应是？", "自动化测试和手动测试，你如何分配精力？"], "quote": "没有测不出的bug，只有不够狠的测试用例。", "color": "#784212", "modernRole": "测试工程师", "description": "少林寺弟子，质量检验的苦行僧。精通各种测试方法论，善于从用户角度发现问题。在他看来，每个bug都是对质量的亵渎，必须消灭在上线之前。"}, {"id": "fullstack", "name": "Fullstack", "alias": "逍遥散人", "clan": "逍遥派", "martialArt": "北冥神功·全栈版", "martialDesc": "博采众长，不拘门派。前端后端运维都能上手，哪里需要就去哪里，是最灵活的多面手。", "personality": ["博学多才", "适应性强", "好奇心旺", "快速学习"], "tags": ["全栈", "灵活", "多面手"], "traitLines": ["前端和后端都出了问题，你先解决哪个？", "新技术层出不穷，你如何保持学习？", "在专精和广博之间，你如何取舍？"], "quote": "管他什么门派，能解决问题的武功就是好武功。", "color": "#1a5276", "modernRole": "全栈工程师", "description": "逍遥派散人，博采众长的全栈高手。不拘泥于前后端之分，以解决问题为导向。好奇心旺盛，学习速度极快，是团队中最灵活的存在。"}];
+const QUESTIONS = [{"id": 1, "scene": "门派接到一个紧急任务——三天内交付一个江湖通缉榜系统。", "question": "作为门派弟子，你的第一反应是：", "options": [{"text": "先明确需求和验收标准，再倒推排期", "scores": {"pm": 3, "techplanner": 2, "cto": 1}}, {"text": "立刻评估技术方案，看看能不能快速搞定", "scores": {"architect": 3, "backend": 2, "fullstack": 1}}, {"text": "先确认测试方案，三天交付质量不能掉", "scores": {"qa": 3, "tester": 2, "standard": 1}}, {"text": "直接开始写代码，边做边调整", "scores": {"frontend": 2, "fullstack": 2, "backend": 1}}]}, {"id": 2, "scene": "掌门（CTO）在大会上宣布：下个季度全面转向新功法体系（微服务）。", "question": "你的态度是：", "options": [{"text": "先调研新体系的优劣，写一份分析报告", "scores": {"architect": 2, "techplanner": 3, "standard": 1}}, {"text": "只要方向对了，执行到位就行，我负责推进", "scores": {"pm": 3, "teamlead": 2, "cto": 1}}, {"text": "关心的是迁移过程中的测试覆盖率和回滚方案", "scores": {"qa": 3, "tester": 2, "devops": 2}}, {"text": "太好了，新技术学起来！先把demo跑通", "scores": {"fullstack": 3, "frontend": 2, "backend": 1}}]}, {"id": 3, "scene": "你发现一位师弟的代码风格和大家完全不同，而且不肯改。", "question": "你怎么处理？", "options": [{"text": "制定明确的编码规范，并设置自动检查", "scores": {"standard": 3, "qa": 2, "devops": 1}}, {"text": "找他聊聊，了解原因，引导他理解统一风格的价值", "scores": {"pm": 3, "teamlead": 2, "qa": 1}}, {"text": "直接提 code review，把问题摆在桌面上", "scores": {"architect": 2, "qa": 2, "backend": 2}}, {"text": "风格不重要，能跑就行，别浪费时间", "scores": {"fullstack": 2, "frontend": 1, "backend": 1}}]}, {"id": 4, "scene": "门派要参加武林大会（技术分享），需要有人上台演示。", "question": "你会：", "options": [{"text": "我来！我最擅长把复杂的东西讲得通俗易懂", "scores": {"pm": 3, "fullstack": 2, "frontend": 1}}, {"text": "我来准备演示内容，但要有人帮我检查细节", "scores": {"architect": 2, "standard": 2, "tester": 1}}, {"text": "我负责背后的技术支持，确保演示不出问题", "scores": {"devops": 3, "backend": 2, "tester": 1}}, {"text": "我负责策划整个演讲的节奏和重点", "scores": {"cto": 2, "pm": 2, "teamlead": 2}}]}, {"id": 5, "scene": "深夜，线上系统突然报警，用户反馈页面打不开。", "question": "你的第一反应是：", "options": [{"text": "先看监控日志，定位问题根源", "scores": {"devops": 3, "backend": 2, "tester": 1}}, {"text": "先通知相关人，组织排查", "scores": {"teamlead": 3, "pm": 2, "cto": 1}}, {"text": "先写个临时方案止血，再慢慢排查", "scores": {"fullstack": 3, "frontend": 2, "backend": 1}}, {"text": "先回滚到上一个稳定版本", "scores": {"qa": 3, "devops": 2, "standard": 1}}]}, {"id": 6, "scene": "门派要砍掉一个已经做了两个月的功能模块。", "question": "你的想法是：", "options": [{"text": "砍就砍，方向比沉没成本重要", "scores": {"cto": 3, "pm": 2, "architect": 1}}, {"text": "惋惜，但如果有更好的方向，我支持", "scores": {"teamlead": 2, "fullstack": 2, "frontend": 1}}, {"text": "要确保砍掉后不会影响其他模块", "scores": {"qa": 3, "tester": 2, "devops": 2}}, {"text": "要分析为什么做了两个月才发现方向不对", "scores": {"techplanner": 3, "standard": 2, "pm": 1}}]}, {"id": 7, "scene": "师弟来问你：这个项目的技术选型应该用什么？", "question": "你会怎么回答？", "options": [{"text": "取决于项目需求，我帮你梳理一下选型维度", "scores": {"architect": 3, "techplanner": 2, "standard": 1}}, {"text": "用什么不重要，重要的是团队都会用", "scores": {"teamlead": 3, "standard": 2, "pm": 1}}, {"text": "最新的那个！我来帮你搭个原型试试", "scores": {"fullstack": 3, "frontend": 2, "backend": 1}}, {"text": "先看看社区活跃度和生产案例再决定", "scores": {"devops": 2, "tester": 2, "backend": 2}}]}, {"id": 8, "scene": "你的代码 review 被打回了，reviewer 说了很尖锐的意见。", "question": "你的反应是：", "options": [{"text": "认真看意见，有道理就改，不对就讨论", "scores": {"architect": 2, "standard": 2, "backend": 2}}, {"text": "感谢指正，质量第一，虚心接受", "scores": {"qa": 2, "tester": 2, "teamlead": 2}}, {"text": "有点不爽，但还是改了", "scores": {"frontend": 2, "backend": 2, "fullstack": 2}}, {"text": "写得更详细的设计文档，避免下次被误解", "scores": {"architect": 3, "standard": 2, "techplanner": 1}}]}, {"id": 9, "scene": "掌门让你评估一个新项目需要多少人力和时间。", "question": "你怎么做？", "options": [{"text": "按功能点拆解，用标准方法估算工作量", "scores": {"techplanner": 3, "standard": 2, "architect": 1}}, {"text": "先做原型验证，再根据实际情况估时间", "scores": {"fullstack": 3, "frontend": 2, "architect": 1}}, {"text": "和团队一起评估，综合各方意见", "scores": {"teamlead": 3, "pm": 2, "techplanner": 1}}, {"text": "这种估算不准的，给个范围就行", "scores": {"pm": 2, "cto": 2, "teamlead": 1}}]}, {"id": 10, "scene": "你看到一个炫酷的新UI动效，想用到自己的项目中。", "question": "你的第一想法是：", "options": [{"text": "先看看性能影响，不能为了炫影响体验", "scores": {"frontend": 2, "devops": 2, "qa": 1}}, {"text": "太酷了！先实现出来再说", "scores": {"frontend": 3, "fullstack": 2, "backend": 1}}, {"text": "这个动效对业务目标有什么帮助？", "scores": {"pm": 3, "cto": 2, "techplanner": 1}}, {"text": "要考虑兼容性和无障碍访问", "scores": {"tester": 2, "standard": 2, "qa": 2}}]}, {"id": 11, "scene": "团队决定引入自动化测试，但推进困难。", "question": "你怎么看？", "options": [{"text": "自动化测试是必须的，我来带头写", "scores": {"tester": 3, "qa": 3, "devops": 1}}, {"text": "从高价值的模块开始，逐步推广", "scores": {"teamlead": 3, "architect": 2, "pm": 1}}, {"text": "写测试的时间不如写新功能", "scores": {"frontend": 2, "fullstack": 2, "backend": 1}}, {"text": "要把自动化测试纳入交付标准", "scores": {"standard": 3, "qa": 2, "cto": 1}}]}, {"id": 12, "scene": "你刚加入一个新团队，发现他们的 Git 提交信息都是\"update\"、\"fix\"。", "question": "你会：", "options": [{"text": "忍住不改，先融入团队再说", "scores": {"pm": 2, "teamlead": 2, "fullstack": 2}}, {"text": "提交一份 Git 规范提案，带头示范", "scores": {"standard": 3, "architect": 2, "devops": 1}}, {"text": "设置 commitlint 自动校验", "scores": {"devops": 3, "qa": 2, "standard": 2}}, {"text": "在 code review 时顺便提一下", "scores": {"qa": 2, "architect": 2, "tester": 1}}]}, {"id": 13, "scene": "用户反馈说功能不好用，但产品经理认为需求已经满足了。", "question": "你的态度是：", "options": [{"text": "用户的反馈就是最好的需求，重新审视", "scores": {"pm": 3, "frontend": 2, "qa": 1}}, {"text": "用数据说话，看用户行为数据再决定", "scores": {"techplanner": 3, "cto": 2, "tester": 1}}, {"text": "从技术角度看看能不能低成本优化体验", "scores": {"fullstack": 3, "frontend": 2, "backend": 1}}, {"text": "按需求文档验收，满足就是满足", "scores": {"qa": 2, "standard": 2, "tester": 2}}]}, {"id": 14, "scene": "你的同事写了一段\"能跑但很丑\"的代码。", "question": "你会：", "options": [{"text": "能跑就是好代码，不完美但有效", "scores": {"fullstack": 3, "frontend": 2, "backend": 1}}, {"text": "提出改进建议，但尊重他的实现", "scores": {"architect": 2, "teamlead": 2, "standard": 1}}, {"text": "丑不丑不重要，有测试覆盖就行", "scores": {"tester": 3, "qa": 2, "devops": 1}}, {"text": "丑代码是技术债，早晚要还的", "scores": {"standard": 3, "architect": 2, "techplanner": 1}}]}, {"id": 15, "scene": "门派要你负责一个从零开始的新项目。", "question": "你最想做的一件事是：", "options": [{"text": "设计清晰的架构和数据模型", "scores": {"architect": 3, "backend": 2, "standard": 1}}, {"text": "先跑通一个最小可用版本", "scores": {"fullstack": 3, "frontend": 2, "pm": 1}}, {"text": "搭建自动化流水线和基础设施", "scores": {"devops": 3, "standard": 2, "tester": 1}}, {"text": "明确目标和里程碑，制定详细计划", "scores": {"pm": 3, "techplanner": 2, "teamlead": 1}}]}, {"id": 16, "scene": "你发现团队中有人偷偷用了未经评审的第三方库。", "question": "你会：", "options": [{"text": "先评估安全风险，再决定怎么处理", "scores": {"qa": 3, "devops": 2, "tester": 2}}, {"text": "规范流程很重要，但也要理解他的初衷", "scores": {"teamlead": 3, "pm": 2, "standard": 1}}, {"text": "只要好用就留着，走个补审批流程", "scores": {"fullstack": 2, "frontend": 2, "backend": 1}}, {"text": "立刻移除，未经评审的库不能用", "scores": {"standard": 3, "qa": 2, "architect": 2}}]}, {"id": 17, "scene": "项目接近上线，产品突然加了一个\"小需求\"。", "question": "你的反应是：", "options": [{"text": "小需求也不小，要走变更流程", "scores": {"standard": 2, "qa": 2, "techplanner": 2}}, {"text": "评估影响范围，如果风险可控就做", "scores": {"architect": 2, "teamlead": 2, "fullstack": 1}}, {"text": "先答应下来，再想办法搞定", "scores": {"fullstack": 3, "frontend": 2, "backend": 1}}, {"text": "和产品沟通，这个需求放到下一版本", "scores": {"pm": 3, "cto": 2, "teamlead": 1}}]}, {"id": 18, "scene": "你的代码在code review时，有人说\"这里可以用更简洁的方式实现\"。", "question": "你会：", "options": [{"text": "虚心接受，学习更好的写法", "scores": {"fullstack": 2, "frontend": 2, "backend": 2}}, {"text": "先理解他的方案，再对比优劣", "scores": {"architect": 3, "backend": 2, "standard": 1}}, {"text": "简洁是好，但不能牺牲可读性", "scores": {"standard": 3, "tester": 2, "architect": 1}}, {"text": "感谢建议，但我觉得当前的更清晰", "scores": {"qa": 2, "architect": 2, "frontend": 1}}]}, {"id": 19, "scene": "团队要选一个技术负责人。", "question": "你觉得最重要的是：", "options": [{"text": "技术深度和架构能力", "scores": {"architect": 3, "cto": 2, "backend": 2}}, {"text": "沟通协调和团队凝聚力", "scores": {"teamlead": 3, "pm": 2, "fullstack": 1}}, {"text": "对质量的执着和责任心", "scores": {"qa": 3, "standard": 2, "tester": 1}}, {"text": "全局视野和战略思维", "scores": {"cto": 3, "techplanner": 2, "pm": 1}}]}, {"id": 20, "scene": "项目结束后复盘，你更关注：", "options": [{"text": "哪些经验可以复用到下一个项目", "scores": {"standard": 3, "architect": 2, "teamlead": 1}}, {"text": "用户反馈和业务数据表现如何", "scores": {"pm": 3, "cto": 2, "techplanner": 1}}, {"text": "哪些bug漏测了，下次怎么避免", "scores": {"tester": 3, "qa": 3, "devops": 1}}, {"text": "团队配合是否顺畅，流程哪里可以优化", "scores": {"teamlead": 3, "devops": 2, "fullstack": 1}}]}];
+
+const LABELS = ['甲','乙','丙','丁'];
+
+let currentScreen = 'start';
+let currentQ = 0;
+let answers = {};
+let results = [];
+
+function render() {
+  const app = document.getElementById('app');
+  if (currentScreen === 'start') {
+    app.innerHTML = renderStart();
+  } else if (currentScreen === 'quiz') {
+    app.innerHTML = renderQuiz();
+  } else if (currentScreen === 'result') {
+    app.innerHTML = renderResult();
+  }
+}
+
+function renderStart() {
+  const clanNames = ROLES.map(r => `<span class="clan-tag">${r.clan}</span>`).join('');
+  return `
+    <div class="start-screen">
+      <div class="title-wrapper">
+        <h1 class="main-title">武林角色测试</h1>
+      </div>
+      <p class="sub-title">TechEdict Character Assessment</p>
+      <div class="divider-brush"></div>
+      <p class="start-desc">
+        江湖之大，门派林立。每个技术人心中，都住着一个武侠灵魂。<br>
+        二十道江湖情境，测出你在科技门派中的真实身份。
+      </p>
+      <div class="clans-preview">${clanNames}</div>
+      <button class="btn-start" onclick="startQuiz()">开始测试</button>
+    </div>
+  `;
+}
+
+function startQuiz() {
+  currentScreen = 'quiz';
+  currentQ = 0;
+  answers = {};
+  render();
+}
+
+function renderQuiz() {
+  const q = QUESTIONS[currentQ];
+  const progress = ((currentQ) / QUESTIONS.length * 100);
+  const optionsHtml = q.options.map((opt, i) => `
+    <button class="option-btn" onclick="selectOption(${i})">
+      <span class="option-label">${LABELS[i]}</span>
+      <span>${opt.text}</span>
+    </button>
+  `).join('');
+  return `
+    <div class="quiz-screen">
+      <p class="progress-text">第 ${currentQ + 1} 题 / 共 ${QUESTIONS.length} 题</p>
+      <div class="progress-scroll">
+        <div class="progress-fill" style="width:${progress}%"></div>
+      </div>
+      <div class="scene-box">
+        <div class="scene-label">场景</div>
+        <div class="scene-text">${q.scene}</div>
+      </div>
+      <h2 class="question-text">${q.question}</h2>
+      <div class="options-grid">${optionsHtml}</div>
+    </div>
+  `;
+}
+
+function selectOption(idx) {
+  answers[currentQ] = idx;
+  currentQ++;
+  if (currentQ >= QUESTIONS.length) {
+    calculateResults();
+    currentScreen = 'result';
+  }
+  render();
+  if (currentScreen === 'result') {
+    setTimeout(startTypewriter, 800);
+  }
+  window.scrollTo(0, 0);
+}
+
+function calculateResults() {
+  const scores = {};
+  ROLES.forEach(r => { scores[r.id] = 0; });
+  QUESTIONS.forEach((q, qi) => {
+    const sel = answers[qi];
+    if (sel !== undefined && q.options[sel]) {
+      const opt = q.options[sel];
+      for (const [rid, sc] of Object.entries(opt.scores)) {
+        if (scores[rid] !== undefined) scores[rid] += sc;
+      }
+    }
+  });
+  results = Object.entries(scores)
+    .map(([id, score]) => ({ id, score }))
+    .sort((a, b) => b.score - a.score);
+  const max = results[0].score || 1;
+  results.forEach(r => { r.pct = Math.round(r.score / max * 100); });
+}
+
+function getRole(id) { return ROLES.find(r => r.id === id); }
+
+function renderResult() {
+  const top = getRole(results[0].id);
+  const rankHtml = results.slice(0, 5).map((r, i) => {
+    const role = getRole(r.id);
+    return `
+      <div class="rank-item" style="animation-delay:${i*0.15}s">
+        <span class="rank-num" style="color:${i===0?top.color:'var(--text-secondary)'}">${i+1}</span>
+        <span class="rank-name">${role.alias} (${role.modernRole})</span>
+        <div class="rank-bar-bg">
+          <div class="rank-bar-fill" style="width:${r.pct}%;background:${role.color}"></div>
+        </div>
+        <span class="rank-score">${r.pct}%</span>
+      </div>
+    `;
+  }).join('');
+
+  const tagsHtml = top.tags.map(t => `<span class="tag" style="background:${top.color}">${t}</span>`).join('');
+  const persHtml = top.personality.map(p => `<span class="personality-item">${p}</span>`).join('');
+
+  const radarSvg = buildRadar(top);
+
+  return `
+    <div class="result-screen">
+      <div class="result-header">
+        <div class="seal-badge" style="border-color:${top.color}">
+          <span class="seal-role-name" style="color:${top.color}">${top.name}</span>
+          <span class="seal-clan" style="color:${top.color}">${top.clan}</span>
+        </div>
+        <h2 class="result-alias" style="color:${top.color}">${top.alias}</h2>
+        <p class="result-modern">${top.modernRole}</p>
+      </div>
+      <div class="quote-box" style="border-color:${top.color}">
+        <span class="quote-text" id="quoteTarget"></span><span class="quote-cursor" id="cursor"></span>
+      </div>
+      <h3 class="section-title">角色简介</h3>
+      <p class="result-desc">${top.description}</p>
+      <div class="tags-row">${tagsHtml}</div>
+      <h3 class="section-title">性格特质</h3>
+      <div class="personality-row">${persHtml}</div>
+      <h3 class="section-title">武功心法</h3>
+      <div class="martial-box">
+        <div class="martial-name" style="color:${top.color}">${top.martialArt}</div>
+        <p class="martial-desc">${top.martialDesc}</p>
+      </div>
+      <h3 class="section-title">角色契合度</h3>
+      <div class="radar-container">${radarSvg}</div>
+      <h3 class="section-title">门派排名</h3>
+      <div class="rank-list">${rankHtml}</div>
+      <button class="btn-restart" onclick="restart()">重新测试</button>
+    </div>
+  `;
+}
+
+function buildRadar(topRole) {
+  const dims = ['战略思维','沟通协调','架构设计','质量把控','执行效率','技术创新'];
+  const topIdx = ROLES.indexOf(topRole);
+  const topScores = {};
+  QUESTIONS.forEach((q, qi) => {
+    const sel = answers[qi];
+    if (sel !== undefined && q.options[sel]) {
+      const opt = q.options[sel];
+      for (const [rid, sc] of Object.entries(opt.scores)) {
+        if (!topScores[rid]) topScores[rid] = 0;
+        topScores[rid] += sc;
+      }
+    }
+  });
+  const maxS = Math.max(...Object.values(topScores), 1);
+  const vals = dims.map((_, i) => {
+    const rid = ['cto','pm','architect','qa','devops','fullstack'][i];
+    return Math.round((topScores[rid] || 0) / maxS * 100);
+  });
+
+  const cx = 150, cy = 150, r = 110, n = 6;
+  function pt(i, scale) {
+    const angle = (Math.PI * 2 * i / n) - Math.PI / 2;
+    return {
+      x: cx + Math.cos(angle) * r * scale,
+      y: cy + Math.sin(angle) * r * scale
+    };
+  }
+
+  let gridLines = '';
+  for (let lv = 1; lv <= 4; lv++) {
+    const pts = Array.from({length:n}, (_,i) => pt(i, lv/4));
+    gridLines += `<polygon points="${pts.map(p=>p.x+','+p.y).join(' ')}" fill="none" stroke="var(--ink-light)" stroke-width="1"/>`;
+  }
+
+  const axes = Array.from({length:n}, (_,i) => {
+    const p = pt(i, 1);
+    return `<line x1="${cx}" y1="${cy}" x2="${p.x}" y2="${p.y}" stroke="var(--ink-light)" stroke-width="1"/>`;
+  }).join('');
+
+  const dataPoints = Array.from({length:n}, (_,i) => pt(i, vals[i]/100));
+  const dataPolygon = `<polygon points="${dataPoints.map(p=>p.x+','+p.y).join(' ')}" fill="${topRole.color}22" stroke="${topRole.color}" stroke-width="2"/>`;
+  const dataDots = dataPoints.map(p => `<circle cx="${p.x}" cy="${p.y}" r="4" fill="${topRole.color}"/>`).join('');
+
+  const labels = dims.map((d, i) => {
+    const p = pt(i, 1.22);
+    return `<text x="${p.x}" y="${p.y}" text-anchor="middle" dominant-baseline="middle" font-family="var(--font-accent)" font-size="11" fill="var(--text-secondary)">${d}</text>`;
+  }).join('');
+
+  return `<svg viewBox="0 0 300 300" width="300" height="300">
+    ${gridLines}${axes}${dataPolygon}${dataDots}${labels}
+  </svg>`;
+}
+
+let twInterval = null;
+function startTypewriter() {
+  const top = getRole(results[0].id);
+  const text = `"${top.quote}"`;
+  const el = document.getElementById('quoteTarget');
+  const cursor = document.getElementById('cursor');
+  if (!el) return;
+  let idx = 0;
+  el.textContent = '';
+  if (twInterval) clearInterval(twInterval);
+  twInterval = setInterval(() => {
+    if (idx < text.length) {
+      el.textContent += text[idx];
+      idx++;
+    } else {
+      clearInterval(twInterval);
+      if (cursor) setTimeout(() => { cursor.style.display = 'none'; }, 1500);
+    }
+  }, 50);
+}
+
+function restart() {
+  if (twInterval) clearInterval(twInterval);
+  currentScreen = 'start';
+  currentQ = 0;
+  answers = {};
+  results = [];
+  window.scrollTo(0, 0);
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
